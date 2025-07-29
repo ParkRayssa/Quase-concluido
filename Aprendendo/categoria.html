@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Filmes por Categoria - TMDb</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      margin-bottom: 10px;
+      color: #333;
+      border-left: 5px solid #007BFF;
+      padding-left: 10px;
+    }
+
+    .categoria {
+      margin-bottom: 30px;
+    }
+
+    .filmes {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 20px;
+      padding-bottom: 10px;
+    }
+
+    .filme {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 10px;
+      width: 180px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .filme img {
+      max-width: 100%;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .filme h4 {
+      font-size: 16px;
+      color: #222;
+      margin: 0;
+    }
+
+    .filmes::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .filmes::-webkit-scrollbar-thumb {
+      background: #bbb;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Filmes por Categoria</h1>
+
+  <div id="categorias-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const API_KEY = '001669de757773bb76383d910c21e88f';
+    const categoriasContainer = document.getElementById('categorias-container');
+
+    const generosDesejados = {
+      'Ação': 28,
+      'Comédia': 35,
+      'Animação': 16
+    };
+
+    async function carregarFilmesPorGenero(nomeGenero, idGenero) {
+      try {
+        const resposta = await axios.get(`https://api.themoviedb.org/3/discover/movie`, {
+          params: {
+            api_key: API_KEY,
+            language: 'pt-BR',
+            sort_by: 'popularity.desc',
+            with_genres: idGenero,
+            page: 1
+          }
+        });
+
+        const filmes = resposta.data.results;
+
+        const categoriaDiv = document.createElement('div');
+        categoriaDiv.classList.add('categoria');
+
+        const titulo = document.createElement('h2');
+        titulo.textContent = nomeGenero;
+
+        const filmesDiv = document.createElement('div');
+        filmesDiv.classList.add('filmes');
+
+        filmes.forEach(filme => {
+          const filmeDiv = document.createElement('div');
+          filmeDiv.classList.add('filme');
+
+          const poster = filme.poster_path
+            ? `https://image.tmdb.org/t/p/w200${filme.poster_path}`
+            : 'https://via.placeholder.com/200x300?text=Sem+Imagem';
+
+          filmeDiv.innerHTML = `
+            <img src="${poster}" alt="${filme.title}">
+            <h4>${filme.title}</h4>
+          `;
+
+          filmesDiv.appendChild(filmeDiv);
+        });
+
+        categoriaDiv.appendChild(titulo);
+        categoriaDiv.appendChild(filmesDiv);
+        categoriasContainer.appendChild(categoriaDiv);
+      } catch (error) {
+        console.error(`Erro ao carregar filmes de ${nomeGenero}:`, error);
+      }
+    }
+
+    for (const [nome, id] of Object.entries(generosDesejados)) {
+      carregarFilmesPorGenero(nome, id);
+    }
+  </script>
+</body>
+</html>

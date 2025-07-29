@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Filmes Populares</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #pesquisa {
+      margin-bottom: 20px;
+    }
+    #filmes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    #filmes div {
+      width: 220px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Filmes Populares</h1>
+
+  <div id="pesquisa">
+    <input type="text" id="inputBusca" placeholder="Buscar filmes...">
+    <button onclick="buscarFilmes()">Buscar</button>
+  </div>
+
+  <div id="filmes"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const API_KEY = '001669de757773bb76383d910c21e88f';
+    const container = document.getElementById('filmes');
+
+    function carregarPopulares() {
+      axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=pt-BR`)
+        .then(res => exibirFilmes(res.data.results))
+        .catch(err => console.error('Erro:', err));
+    }
+
+    function buscarFilmes() {
+      const termo = document.getElementById('inputBusca').value.trim();
+      if (!termo) {
+        carregarPopulares();
+        return;
+      }
+
+      axios.get(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(termo)}`)
+        .then(res => {
+          if (res.data.results.length > 0) {
+            exibirFilmes(res.data.results);
+          } else {
+            container.innerHTML = '<p>Nenhum filme encontrado.</p>';
+          }
+        })
+        .catch(err => console.error('Erro na busca:', err));
+    }
+
+    function exibirFilmes(filmes) {
+      container.innerHTML = '';
+      filmes.forEach(filme => {
+        const div = document.createElement('div');
+        const imgUrl = filme.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` 
+          : 'https://via.placeholder.com/200x300?text=Sem+Imagem';
+
+        div.innerHTML = `
+          <h3>${filme.title}</h3>
+          <img src="${imgUrl}" alt="Poster de ${filme.title}">
+          <p>${filme.overview || 'Sem descrição disponível.'}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    carregarPopulares();
+  </script>
+</body>
+</html>
